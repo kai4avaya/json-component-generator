@@ -16,17 +16,40 @@ function parseIncognito(value: string | null): boolean {
   return value === "1" || value.toLowerCase() === "true";
 }
 
+// Check URL on initial load (runs before React hydration completes)
+function getInitialIncognito(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return parseIncognito(params.get("incognito"));
+}
+
+// Apply incognito class immediately on script load (before React)
+if (typeof window !== "undefined") {
+  const params = new URLSearchParams(window.location.search);
+  if (parseIncognito(params.get("incognito"))) {
+    document.documentElement.classList.add("incognito");
+  }
+}
+
 // Inner component that uses useSearchParams (must be wrapped in Suspense)
 function IncognitoProviderInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [isIncognito, setIsIncognito] = useState(false);
+  const [isIncognito, setIsIncognito] = useState(getInitialIncognito);
 
-  // Sync from URL query param
+  // Sync from URL query param (for dynamic changes)
   useEffect(() => {
-    setIsIncognito(parseIncognito(searchParams.get("incognito")));
+    const newValue = parseIncognito(searchParams.get("incognito"));
+    setIsIncognito(newValue);
+    
+    // Also update the class immediately
+    if (newValue) {
+      document.documentElement.classList.add("incognito");
+    } else {
+      document.documentElement.classList.remove("incognito");
+    }
   }, [searchParams]);
 
   // Toggle transparent background globally while in incognito
