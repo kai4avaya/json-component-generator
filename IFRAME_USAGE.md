@@ -3,11 +3,13 @@
 ## Overview
 This document explains how to embed the `json-render` playground in an iframe and drive it from a parent page using `postMessage`.
 
+**Published demo:** https://ava9987108-json-component-generator-97poeybud.vercel.app/ — this is the public site you can use to inject from a parent page in production (use as the iframe src or as the postMessage target origin).
+
 It covers:
 - The message payload shape
 - Auto-detection flow (Edit vs Generate)
 - Security and origin checks
-- Test harness usage (`iframe-test.html`)
+- Test harness usage (`iframe-test.html`) 
 
 ---
 
@@ -30,14 +32,23 @@ Notes:
 
 ## Implementation example (parent page)
 ```js
-// Auto-detect based on text
-iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text: 'edit: change the color' }, '*');
+// Auto-detect based on text (recommended for simple integrations)
+iframe.contentWindow.postMessage(
+  { type: 'TYPE_INPUT', text: 'edit: change the color' },
+  'https://ava9987108-json-component-generator-97poeybud.vercel.app'
+);
 
-// Or explicit action
-iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text: 'make a pricing table', action: 'generate' }, '*');
+// Or explicit action (explicit action takes precedence)
+iframe.contentWindow.postMessage(
+  { type: 'TYPE_INPUT', text: 'make a pricing table', action: 'generate' },
+  'https://ava9987108-json-component-generator-97poeybud.vercel.app'
+);
+
+// If you control both parent and iframe, you can also send to '*' during development:
+// iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text: '...' }, '*');
 ```
 
-Replace `'*'` with a specific origin when possible for security, e.g. `iframe.contentWindow.postMessage(message, 'https://app.example.com')`.
+Replace the target origin with the published demo URL above in production (do not use `'*'` in production).
 
 ---
 
