@@ -93,6 +93,15 @@
     background: transparent !important;
   }
 
+  /* Make inner containers transparent in incognito mode */
+  html.incognito .bg-background {
+    background: transparent !important;
+  }
+
+  html.incognito .border-border {
+    border-color: rgba(128, 128, 128, 0.3) !important;
+  }
+
   html.incognito .site-header,
   html.incognito .site-footer {
     display: none;
