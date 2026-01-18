@@ -8,6 +8,7 @@ This document explains how to embed the `json-render` playground in an iframe an
 It covers:
 - The message payload shape
 - Auto-detection flow (Edit vs Generate)
+- Incognito mode (minimal iframe UI)
 - Security and origin checks
 - Test harness usage (`iframe-test.html`) 
 
@@ -67,6 +68,28 @@ Replace the target origin with the published demo URL above in production (do no
 
 ---
 
+## Incognito mode (iframe-friendly UI)
+Incognito mode is a minimal rendering mode intended for iframe embedding.
+
+When enabled:
+- The page background becomes transparent.
+- The header and footer are hidden.
+- The UI collapses down to just the prompt input + the generated component output.
+
+### Enable via query param
+Append `incognito=1` (or `incognito=true`) to the iframe URL:
+
+Example:
+`https://ava9987108-json-component-generator-97poeybud.vercel.app/?incognito=1`
+
+This can be combined with `prompt`:
+`https://ava9987108-json-component-generator-97poeybud.vercel.app/?incognito=1&prompt=edit%3A%20add%20a%20phone`
+
+### Enable via UI
+On the main site (non-iframe), click the incognito icon in the header (between the play button and theme toggle). It toggles the same `incognito` query param.
+
+---
+
 ## Useful tips
 - Use the `Inject → Auto` mode when the parent integrates with user editors or tools and wants intuitive behavior based on the prompt text (e.g., `edit:` prefix).
 - When you control both parent and iframe, you may add a small handshake to ensure the app is ready (iframe can send a `READY` message back; set a short timeout/retry on the parent before sending TYPE_INPUT).
@@ -83,6 +106,7 @@ Replace the target origin with the published demo URL above in production (do no
 
 ## Changelog
 - 2026-01-17 — Added auto-detect flow and test harness support.
+- 2026-01-18 — Added `?incognito=1` minimal iframe UI mode.
 
 ---
 

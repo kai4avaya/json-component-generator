@@ -35,6 +35,11 @@
         </div>
 
         <div class="control-item">
+          <label for="incognito">Incognito mode</label>
+          <label style="font-size:12px; color:#475569; margin:0"><input id="incognito" type="checkbox" /> enable (transparent background & minimal UI)</label>
+        </div>
+
+        <div class="control-item">
           <label for="prompt">Prompt</label>
           <input id="prompt" type="text" placeholder="Create a login form" />
         </div>
@@ -71,7 +76,7 @@
         <button data-prompt="edit the form to add a phone field" style="background:#fef3c7; color:#92400e">Edit: add phone</button>
         <div style="flex-basis:100%"></div>
         <div class="help">
-          <strong>Quick help:</strong> Use <code>Inject → Auto</code> to let the app auto-detect "edit" in the prompt and choose Edit mode. See <a href="./IFRAME_USAGE.md">IFRAME_USAGE.md</a> for full details.
+          <strong>Quick help:</strong> Use <code>Inject → Auto</code> to let the app auto-detect "edit" in the prompt and choose Edit mode. Use the <code>Incognito mode</code> checkbox to load the app with a transparent background and minimal UI (also available via <code>?incognito=1</code>). See <a href="./IFRAME_USAGE.md">IFRAME_USAGE.md</a> for full details.
         </div>
       </div>
 
@@ -102,8 +107,20 @@
         if (!base) base = 'http://localhost:3000/';
         // ensure trailing slash
         if (!base.endsWith('/')) base += '/';
-        const p = encodeURIComponent(promptInput.value || '');
-        return base + '?prompt=' + p;
+        // Build a URL and preserve/append query params (prompt, incognito)
+        try {
+          const url = new URL(base);
+          const params = new URLSearchParams(url.search);
+          if ((promptInput.value || '').trim()) params.set('prompt', promptInput.value.trim());
+          if (document.getElementById('incognito')?.checked) params.set('incognito', '1');
+          url.search = params.toString();
+          return url.toString();
+        } catch (err) {
+          // Fallback for non-absolute urls
+          const p = encodeURIComponent(promptInput.value || '');
+          const inc = document.getElementById('incognito')?.checked ? '&incognito=1' : '';
+          return base + '?prompt=' + p + inc;
+        }
       }
 
       loadBtn.addEventListener('click', () => {

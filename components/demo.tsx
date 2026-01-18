@@ -12,6 +12,7 @@ import { Renderer, useUIStream, JSONUIProvider } from "@json-render/react";
 import { collectUsedComponents, serializeProps } from "@json-render/codegen";
 import { toast } from "sonner";
 import { useSimulation } from "./simulation-context";
+import { useIncognito } from "./incognito-context";
 
 // Local definition for UITree since it's not exported from core
 export interface UITree {
@@ -187,6 +188,8 @@ type Tab = "stream" | "json";
 type RenderView = "dynamic" | "static";
 
 export function Demo() {
+  const { isIncognito } = useIncognito();
+
   const [mode, setMode] = useState<Mode>("interactive");
   const [phase, setPhase] = useState<Phase>("typing");
   const [typedPrompt, setTypedPrompt] = useState("");
@@ -216,6 +219,13 @@ export function Demo() {
   const [autoTypeAction, setAutoTypeAction] = useState<"generate" | "edit">("generate");
   const autoTypeCompleteRef = useRef(false);
   const { simulationTriggered } = useSimulation();
+
+  // Incognito mode is minimal UI: keep the output panel, hide the rest.
+  useEffect(() => {
+    if (!isIncognito) return;
+    if (showCode) setShowCode(false);
+    if (renderView !== "dynamic") setRenderView("dynamic");
+  }, [isIncognito, renderView, showCode]);
 
   // Load showCode preference on mount
   useEffect(() => {
@@ -1231,8 +1241,14 @@ Open [http://localhost:3000](http://localhost:3000) to view.
   const isStreamingSimulation = mode === "simulation" && phase === "streaming";
   const showLoadingDots = isStreamingSimulation || isStreaming;
 
+  const effectiveShowCode = showCode && !isIncognito;
+
   return (
-    <div className="w-full max-w-4xl mx-auto text-left">
+    <div
+      className={`w-full text-left ${
+        isIncognito ? "" : "max-w-4xl mx-auto"
+      }`}
+    >
       {/* Prompt input */}
       <div className="mb-6">
         <div
@@ -1363,18 +1379,22 @@ Open [http://localhost:3000](http://localhost:3000) to view.
             </div>
           )}
         </div>
-        <div className="mt-2 text-xs text-muted-foreground text-center flex items-center justify-between">
-          <span>
-            Try: &quot;Create a login form&quot; or &quot;Build a feedback form with rating&quot;
-          </span>
-        </div>
+        {!isIncognito && (
+          <div className="mt-2 text-xs text-muted-foreground text-center flex items-center justify-between">
+            <span>
+              Try: &quot;Create a login form&quot; or &quot;Build a feedback form with rating&quot;
+            </span>
+          </div>
+        )}
       </div>
 
       <div
-        className={`grid gap-4 ${showCode ? "lg:grid-cols-2" : "lg:grid-cols-1"}`}
+        className={`grid gap-4 ${
+          effectiveShowCode ? "lg:grid-cols-2" : "lg:grid-cols-1"
+        }`}
       >
         {/* Tabbed code/stream/json panel */}
-        {showCode && (
+        {effectiveShowCode && (
           <div className="min-w-0">
             <div className="flex items-center justify-between mb-2 h-6">
               <div className="flex items-center gap-4">
@@ -1449,68 +1469,74 @@ Open [http://localhost:3000](http://localhost:3000) to view.
 
         {/* Rendered output using json-render */}
         <div className="min-w-0">
-          <div className="flex items-center justify-between mb-2 h-6">
-            <div className="flex items-center gap-4">
-              {!showCode && (
+          {!isIncognito && (
+            <div className="flex items-center justify-between mb-2 h-6">
+              <div className="flex items-center gap-4">
+                {!effectiveShowCode && (
+                  <button
+                    onClick={() => setShowCode(true)}
+                    className="text-xs font-mono text-muted-foreground hover:text-foreground"
+                  >
+                    show code
+                  </button>
+                )}
+                {(
+                  [
+                    { key: "dynamic", label: "live render" },
+                    { key: "static", label: "static code" },
+                  ] as const
+                ).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setRenderView(key)}
+                    className={`text-xs font-mono transition-colors ${
+                      renderView === key
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowCode(true)}
-                  className="text-xs font-mono text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowExportModal(true)}
+                  disabled={!currentTree?.root}
+                  className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Export as Next.js project"
                 >
-                  show code
+                  export
                 </button>
-              )}
-              {(
-                [
-                  { key: "dynamic", label: "live render" },
-                  { key: "static", label: "static code" },
-                ] as const
-              ).map(({ key, label }) => (
                 <button
-                  key={key}
-                  onClick={() => setRenderView(key)}
-                  className={`text-xs font-mono transition-colors ${
-                    renderView === key
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  onClick={() => setIsFullscreen(true)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Maximize"
                 >
-                  {label}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                    <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                    <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                    <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+                  </svg>
                 </button>
-              ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowExportModal(true)}
-                disabled={!currentTree?.root}
-                className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Export as Next.js project"
-              >
-                export
-              </button>
-              <button
-                onClick={() => setIsFullscreen(true)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Maximize"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M8 3H5a2 2 0 0 0-2 2v3" />
-                  <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-                  <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-                  <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="rounded bg-background h-96 grid relative group">
+          )}
+          <div
+            className={`rounded h-96 grid relative group ${
+              isIncognito ? "bg-transparent" : "bg-background"
+            }`}
+          >
             {renderView === "static" && (
               <div className="absolute top-2 right-2 z-10">
                 <CopyButton

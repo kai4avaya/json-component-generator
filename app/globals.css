@@ -87,6 +87,21 @@
     font-family: var(--font-geist-sans), system-ui, sans-serif;
   }
 
+  /* Incognito mode: iframe-friendly transparent page background */
+  html.incognito body {
+    background: transparent !important;
+  }
+
+  html.incognito .site-header,
+  html.incognito .site-footer {
+    display: none;
+  }
+
+  html.incognito .incognito-home-section {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
   ::selection {
     @apply bg-foreground text-background;
   }

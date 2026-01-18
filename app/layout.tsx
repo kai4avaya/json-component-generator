@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SimulationProvider } from "@/components/simulation-context";
+import { IncognitoProvider } from "@/components/incognito-context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -78,13 +79,15 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeProvider>
-          <SimulationProvider>
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </SimulationProvider>
+          <IncognitoProvider>
+            <SimulationProvider>
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+            </SimulationProvider>
+          </IncognitoProvider>
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />

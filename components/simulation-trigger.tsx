@@ -10,7 +10,6 @@ export function SimulationTrigger() {
     <button
       onClick={triggerSimulation}
       className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-      title="Run Simulation"
       aria-label="Run Simulation"
     >
       <Play className="h-[1.2rem] w-[1.2rem]" />
