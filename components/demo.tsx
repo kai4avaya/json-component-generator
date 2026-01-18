@@ -189,8 +189,12 @@ type RenderView = "dynamic" | "static";
 
 export function Demo() {
   const { isIncognito } = useIncognito();
+  const [isMounted, setIsMounted] = useState(false);
 
   const [mode, setMode] = useState<Mode>("interactive");
+    useEffect(() => {
+      setIsMounted(true);
+    }, []);
   const [phase, setPhase] = useState<Phase>("typing");
   const [typedPrompt, setTypedPrompt] = useState("");
   const [hasInput, setHasInput] = useState(false);
@@ -1241,16 +1245,17 @@ Open [http://localhost:3000](http://localhost:3000) to view.
   const isStreamingSimulation = mode === "simulation" && phase === "streaming";
   const showLoadingDots = isStreamingSimulation || isStreaming;
 
-  const effectiveShowCode = showCode && !isIncognito;
+  const incognitoActive = isMounted && isIncognito;
+  const effectiveShowCode = showCode && !incognitoActive;
 
   return (
     <div
-      className={`w-full text-left ${
-        isIncognito ? "" : "max-w-4xl mx-auto"
+      className={`w-full text-left incognito-shell ${
+        incognitoActive ? "" : "max-w-4xl mx-auto"
       }`}
     >
       {/* Prompt input */}
-      <div className="mb-6">
+      <div className={`mb-6 ${incognitoActive ? "mt-10" : ""}`}>
         <div
           className="border border-border rounded p-3 bg-background font-mono text-sm min-h-[44px] flex items-center justify-between cursor-text"
           onClick={() => {
@@ -1379,7 +1384,7 @@ Open [http://localhost:3000](http://localhost:3000) to view.
             </div>
           )}
         </div>
-        {!isIncognito && (
+        {!incognitoActive && (
           <div className="mt-2 text-xs text-muted-foreground text-center flex items-center justify-between">
             <span>
               Try: &quot;Create a login form&quot; or &quot;Build a feedback form with rating&quot;
@@ -1419,7 +1424,7 @@ Open [http://localhost:3000](http://localhost:3000) to view.
                 close
               </button>
             </div>
-          <div className="border border-border rounded bg-background font-mono text-xs h-96 text-left grid relative group">
+          <div className="json-panel border border-border rounded bg-background font-mono text-xs h-96 text-left grid relative group">
             <div className="absolute top-2 right-2 z-10">
               <CopyButton
                 text={
@@ -1469,7 +1474,7 @@ Open [http://localhost:3000](http://localhost:3000) to view.
 
         {/* Rendered output using json-render */}
         <div className="min-w-0">
-          {!isIncognito && (
+          {!incognitoActive && (
             <div className="flex items-center justify-between mb-2 h-6">
               <div className="flex items-center gap-4">
                 {!effectiveShowCode && (
@@ -1532,11 +1537,7 @@ Open [http://localhost:3000](http://localhost:3000) to view.
               </div>
             </div>
           )}
-          <div
-            className={`rounded h-96 grid relative group ${
-              isIncognito ? "bg-transparent" : "bg-background"
-            }`}
-          >
+          <div className="render-panel rounded h-96 grid relative group bg-background border border-border">
             {renderView === "static" && (
               <div className="absolute top-2 right-2 z-10">
                 <CopyButton

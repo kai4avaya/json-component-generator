@@ -31,15 +31,28 @@ const INCOGNITO_STYLES = `
     background: transparent !important;
     background-color: transparent !important;
   }
-  html.incognito * {
-    --background: transparent !important;
-  }
-  html.incognito .bg-background,
-  html.incognito [class*="bg-background"],
-  html.incognito .bg-card,
-  html.incognito [class*="bg-card"] {
+  html.incognito .incognito-shell {
     background: transparent !important;
     background-color: transparent !important;
+  }
+  html.incognito .header-normal {
+    display: none !important;
+  }
+  html.incognito .header-incognito {
+    display: block !important;
+  }
+  html.incognito .json-panel,
+  html.incognito .render-panel {
+    background: var(--background) !important;
+    background-color: var(--background) !important;
+    border-color: rgba(128, 128, 128, 0.3) !important;
+  }
+  html.incognito .render-panel .bg-background,
+  html.incognito .render-panel [class*="bg-background"],
+  html.incognito .render-panel .bg-card,
+  html.incognito .render-panel [class*="bg-card"] {
+    background: var(--background) !important;
+    background-color: var(--background) !important;
   }
 `;
 
