@@ -298,7 +298,10 @@ export function Demo() {
     }
   }, []);
 
-  // Auto-type effect for query param
+  // Auto-type effect for query param / iframe injection
+  // Uses same 20ms speed as simulation typing for consistency
+  const isAutoTyping = autoTypeText !== null && !autoTypeCompleteRef.current && autoTypeIndex < (autoTypeText?.length || 0);
+  
   useEffect(() => {
     if (!autoTypeText || autoTypeCompleteRef.current) return;
     
@@ -309,7 +312,7 @@ export function Demo() {
           setHasInput(true);
         }
         setAutoTypeIndex(i => i + 1);
-      }, 30 + Math.random() * 20); // Slight randomness for natural feel
+      }, 20); // Same speed as simulation (20ms)
       return () => clearTimeout(timeout);
     } else {
       // Typing complete - auto-submit after a short delay
@@ -1257,12 +1260,21 @@ Open [http://localhost:3000](http://localhost:3000) to view.
             </div>
           ) : (
             <form
-              className="flex items-center flex-1"
+              className="flex items-center flex-1 relative"
               onSubmit={(e) => {
                 e.preventDefault();
                 triggerGenerate();
               }}
             >
+              {/* Auto-typing overlay with cursor - shows text + blinking cursor during iframe/param injection */}
+              {isAutoTyping && (
+                <div className="absolute inset-0 flex items-center pointer-events-none z-10">
+                  <span className="inline-flex items-center text-base">
+                    {inputRef.current?.value || ''}
+                  </span>
+                  <span className="inline-block w-2 h-4 bg-foreground ml-0.5 animate-pulse" />
+                </div>
+              )}
               <input
                 ref={inputRef}
                 type="text"
@@ -1273,7 +1285,7 @@ Open [http://localhost:3000](http://localhost:3000) to view.
                   if (hasText !== hasInput) setHasInput(hasText);
                 }}
                 placeholder="Describe what you want to build..."
-                className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground/50 text-base"
+                className={`flex-1 bg-transparent outline-none placeholder:text-muted-foreground/50 text-base ${isAutoTyping ? 'caret-transparent' : ''}`}
                 disabled={isStreaming}
                 maxLength={140}
               />

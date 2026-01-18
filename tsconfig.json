@@ -18,6 +18,10 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "local-packages/**/tsup.config.ts",
+    "local-packages/**/src/**",
+    "local-packages/**/*.test.ts",
+    "local-packages/**/*.test.tsx"
   ]
 }
