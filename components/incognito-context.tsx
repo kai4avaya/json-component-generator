@@ -23,11 +23,36 @@ function getInitialIncognito(): boolean {
   return parseIncognito(params.get("incognito"));
 }
 
-// Apply incognito class immediately on script load (before React)
+// Incognito CSS styles - injected directly to avoid Tailwind purging issues
+const INCOGNITO_STYLES = `
+  html.incognito,
+  html.incognito body {
+    background: transparent !important;
+  }
+  html.incognito * {
+    --background: transparent !important;
+  }
+  html.incognito .bg-background,
+  html.incognito [class*="bg-background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  html.incognito .site-header,
+  html.incognito .site-footer {
+    display: none !important;
+  }
+`;
+
+// Apply incognito class and styles immediately on script load (before React)
 if (typeof window !== "undefined") {
   const params = new URLSearchParams(window.location.search);
   if (parseIncognito(params.get("incognito"))) {
     document.documentElement.classList.add("incognito");
+    // Inject styles immediately
+    const style = document.createElement("style");
+    style.id = "incognito-styles";
+    style.textContent = INCOGNITO_STYLES;
+    document.head.appendChild(style);
   }
 }
 
@@ -57,10 +82,28 @@ function IncognitoProviderInner({ children }: { children: React.ReactNode }) {
     if (typeof document === "undefined") return;
 
     const el = document.documentElement;
-    if (isIncognito) el.classList.add("incognito");
-    else el.classList.remove("incognito");
+    
+    if (isIncognito) {
+      el.classList.add("incognito");
+      // Ensure styles are injected
+      if (!document.getElementById("incognito-styles")) {
+        const style = document.createElement("style");
+        style.id = "incognito-styles";
+        style.textContent = INCOGNITO_STYLES;
+        document.head.appendChild(style);
+      }
+    } else {
+      el.classList.remove("incognito");
+      // Remove injected styles
+      const style = document.getElementById("incognito-styles");
+      if (style) style.remove();
+    }
 
-    return () => el.classList.remove("incognito");
+    return () => {
+      el.classList.remove("incognito");
+      const style = document.getElementById("incognito-styles");
+      if (style) style.remove();
+    };
   }, [isIncognito]);
 
   const setIncognito = useCallback(
