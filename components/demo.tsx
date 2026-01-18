@@ -237,8 +237,17 @@ export function Demo() {
   }, [showCode, isCodeStateLoaded]);
 
   // Listen for messages from parent window (iframe control)
+  // IFRAME AUTO-FLOW: When embedded in an iframe, the parent can send text via postMessage.
+  // If no explicit action is provided, the system auto-detects:
+  //   - If the text contains "edit" (case-insensitive) → triggers Edit mode
+  //   - Otherwise → triggers Generate mode
+  // Parent usage: iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text: 'your prompt' }, '*')
+  // Or with explicit action: { type: 'TYPE_INPUT', text: 'prompt', action: 'edit' | 'generate' }
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Check if running inside an iframe
+    const isInIframe = window !== window.parent;
 
     const handleMessage = (event: MessageEvent) => {
       const data = event.data;
@@ -246,7 +255,19 @@ export function Demo() {
 
       if (data.type === 'TYPE_INPUT') {
         const text = data.text;
-        const action = data.action === 'edit' ? 'edit' : 'generate';
+        
+        // Auto-detect action based on text content if no explicit action provided
+        let action: 'edit' | 'generate';
+        if (data.action === 'edit' || data.action === 'generate') {
+          // Explicit action from parent takes precedence
+          action = data.action;
+        } else if (isInIframe) {
+          // IFRAME AUTO-FLOW: detect "edit" in the text (case-insensitive)
+          action = /\bedit\b/i.test(text) ? 'edit' : 'generate';
+        } else {
+          // Default to generate if not in iframe and no explicit action
+          action = 'generate';
+        }
         
         if (typeof text === 'string') {
           // Reset typing state

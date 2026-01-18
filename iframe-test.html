@@ -7,8 +7,12 @@
     <style>
       body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 24px; background:#f7f7fb; color:#0f172a }
       .wrap { max-width:900px; margin: 0 auto; }
-      .controls { display:flex; gap:8px; margin-bottom:12px; align-items:center }
-      input[type="text"] { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e6e9ef }
+      /* Grid controls for better layout */
+      .controls { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px; align-items:center }
+      .control-item { display:flex; flex-direction:column; gap:8px }
+      .button-group { display:flex; gap:8px; flex-wrap:wrap }
+      .auto { background:#10b981 }
+      input[type="text"] { padding:10px 12px; border-radius:8px; border:1px solid #e6e9ef }
       button { padding:8px 12px; border-radius:8px; border:0; background:#0ea5e9; color:white; cursor:pointer }
       button.secondary { background:#94a3b8 }
       .examples { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px }
@@ -16,6 +20,7 @@
       iframe { width:100%; height:720px; border:1px solid rgba(15,23,42,0.06); border-radius:8px; background:white }
       label { font-size:12px; color:#475569; margin-right:8px }
       .meta { font-size:13px; color:#475569; margin-bottom:10px }
+      .help { font-size:13px; color:#334155; background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid #e2e8f0 }
     </style>
   </head>
   <body>
@@ -23,30 +28,51 @@
       <h1>Embed tester — json-render</h1>
       <p class="meta">Type a prompt, set the app URL (defaults to <code>http://localhost:3000/</code>), then click <strong>Load iframe</strong>. The iframe will get <code>?prompt=...</code> and your app should auto-type and submit.</p>
 
-      <div class="controls">
-        <label for="appUrl">App URL</label>
-        <input id="appUrl" type="text" value="http://localhost:3000/" />
-        <label for="prompt" style="margin-left:8px">Prompt</label>
-        <input id="prompt" type="text" placeholder="Create a login form" />
-        <button id="loadBtn">Load iframe</button>
-        <button id="openBtn" class="secondary">Open new tab</button>
-        <button id="injectGenBtn" class="secondary" title="Type into iframe and trigger Generate">Inject → Generate</button>
-        <button id="injectEditBtn" class="secondary" title="Type into iframe and trigger Edit">Inject → Edit</button>
-        <label style="margin-left:8px; font-size:12px; color:#475569">
-          <input id="autoInjectOnLoad" type="checkbox" /> auto-inject on load
-        </label>
-        <label style="margin-left:8px; font-size:12px; color:#475569">
-          <select id="autoAction" title="Action to perform after auto-inject" style="padding:6px; border-radius:6px; border:1px solid #e6e9ef; background:white; margin-left:6px">
-            <option value="generate">Generate</option>
-            <option value="edit">Edit</option>
-          </select>
-        </label>
+      <div class="controls" id="controls">
+        <div class="control-item">
+          <label for="appUrl">App URL</label>
+          <input id="appUrl" type="text" value="http://localhost:3000/" />
+        </div>
+
+        <div class="control-item">
+          <label for="prompt">Prompt</label>
+          <input id="prompt" type="text" placeholder="Create a login form" />
+        </div>
+
+        <div class="control-item button-group">
+          <button id="loadBtn">Load iframe</button>
+          <button id="openBtn" class="secondary">Open new tab</button>
+        </div>
+
+        <div class="control-item button-group">
+          <button id="injectGenBtn" class="secondary" title="Type into iframe and trigger Generate">Inject → Generate</button>
+          <button id="injectEditBtn" class="secondary" title="Type into iframe and trigger Edit">Inject → Edit</button>
+          <button id="injectAutoBtn" class="auto" title="Auto-detect: if text contains 'edit' → Edit mode, otherwise → Generate">Inject → Auto</button>
+        </div>
+
+        <div class="control-item">
+          <label style="display:block; font-size:12px; color:#475569; margin-bottom:6px">Auto-inject on load</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <label style="font-size:12px; color:#475569; margin:0"><input id="autoInjectOnLoad" type="checkbox" /> enable</label>
+            <select id="autoAction" title="Action to perform after auto-inject" style="padding:6px; border-radius:6px; border:1px solid #e6e9ef; background:white">
+              <option value="auto">Auto-detect</option>
+              <option value="generate">Generate</option>
+              <option value="edit">Edit</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div class="examples">
         <button data-prompt="Create a login form with email and password">Login form</button>
         <button data-prompt="Build a contact form with name, email, and message">Contact form</button>
         <button data-prompt="Create a pricing table with 3 plans">Pricing table</button>
+        <button data-prompt="edit: make the background yellow" style="background:#fef3c7; color:#92400e">Edit: yellow bg</button>
+        <button data-prompt="edit the form to add a phone field" style="background:#fef3c7; color:#92400e">Edit: add phone</button>
+        <div style="flex-basis:100%"></div>
+        <div class="help">
+          <strong>Quick help:</strong> Use <code>Inject → Auto</code> to let the app auto-detect "edit" in the prompt and choose Edit mode. See <a href="./IFRAME_USAGE.md">IFRAME_USAGE.md</a> for full details.
+        </div>
       </div>
 
       <div style="margin-bottom:12px">
@@ -125,11 +151,20 @@
         }
 
         // Post message to iframe to trigger typing + action
-        iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text, action }, '*');
+        // If action is 'auto' or undefined, don't pass action - let iframe auto-detect
+        const payload = { type: 'TYPE_INPUT', text };
+        if (action && action !== 'auto') {
+          payload.action = action;
+        }
+        iframe.contentWindow.postMessage(payload, '*');
       }
 
       injectGenBtn.addEventListener('click', () => sendToIframe('generate'));
       injectEditBtn.addEventListener('click', () => sendToIframe('edit'));
+      
+      // Auto-detect button - no explicit action, iframe will check for "edit" in text
+      const injectAutoBtn = document.getElementById('injectAutoBtn');
+      injectAutoBtn.addEventListener('click', () => sendToIframe('auto'));
 
       // If auto-inject is enabled, send message to iframe after it loads
       loadBtn.addEventListener('click', () => {
@@ -139,11 +174,15 @@
 
         if (autoInjectOnLoad.checked) {
           // Wait for iframe to load then postMessage
-          const action = (autoActionSelect && autoActionSelect.value) || 'generate';
+          const action = (autoActionSelect && autoActionSelect.value) || 'auto';
           const onLoad = () => {
             // Small delay to allow app scripts to initialize
             setTimeout(() => {
-              iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text: promptInput.value || '', action }, '*');
+              const payload = { type: 'TYPE_INPUT', text: promptInput.value || '' };
+              if (action && action !== 'auto') {
+                payload.action = action;
+              }
+              iframe.contentWindow.postMessage(payload, '*');
             }, 350);
             iframe.removeEventListener('load', onLoad);
           };
