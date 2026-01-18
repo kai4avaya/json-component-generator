@@ -88,6 +88,7 @@
   }
 
   /* Incognito mode: iframe-friendly transparent page background */
+  html.incognito,
   html.incognito body {
     background: transparent !important;
   }
