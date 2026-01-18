@@ -26,20 +26,20 @@ function getInitialIncognito(): boolean {
 // Incognito CSS styles - injected directly to avoid Tailwind purging issues
 const INCOGNITO_STYLES = `
   html.incognito,
-  html.incognito body {
+  html.incognito body,
+  html.incognito main {
     background: transparent !important;
+    background-color: transparent !important;
   }
   html.incognito * {
     --background: transparent !important;
   }
   html.incognito .bg-background,
-  html.incognito [class*="bg-background"] {
+  html.incognito [class*="bg-background"],
+  html.incognito .bg-card,
+  html.incognito [class*="bg-card"] {
     background: transparent !important;
     background-color: transparent !important;
-  }
-  html.incognito .site-header,
-  html.incognito .site-footer {
-    display: none !important;
   }
 `;
 

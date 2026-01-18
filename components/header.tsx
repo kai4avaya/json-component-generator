@@ -10,6 +10,23 @@ import { useIncognito } from "./incognito-context";
 export function Header() {
   const { isIncognito, toggleIncognito } = useIncognito();
 
+  if (isIncognito) {
+    return (
+      <header className="site-header fixed top-3 right-3 z-50">
+        <Tooltip content="Exit incognito">
+          <button
+            type="button"
+            onClick={toggleIncognito}
+            className="p-2 rounded-md bg-transparent hover:bg-accent/40 hover:text-accent-foreground transition-colors"
+            aria-label="Exit incognito"
+          >
+            <HatGlasses className="h-[1.2rem] w-[1.2rem]" />
+          </button>
+        </Tooltip>
+      </header>
+    );
+  }
+
   return (
     <header className="site-header sticky top-0 z-50 backdrop-blur-sm bg-background/80">
       <div className="max-w-5xl mx-auto px-6 h-14 flex justify-between items-center">
