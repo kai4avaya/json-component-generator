@@ -14,9 +14,9 @@
   "dependencies": {
     "@ai-sdk/gateway": "^3.0.13",
     "@ai-sdk/google": "^3.0.10",
-    "@json-render/codegen": "workspace:*",
-    "@json-render/core": "workspace:*",
-    "@json-render/react": "workspace:*",
+    "@json-render/codegen": "*",
+    "@json-render/core": "*",
+    "@json-render/react": "*",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tabs": "^1.1.13",
@@ -36,8 +36,8 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.3",
