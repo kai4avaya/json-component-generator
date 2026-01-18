@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iframe test — json-render</title>
+    <style>
+      body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 24px; background:#f7f7fb; color:#0f172a }
+      .wrap { max-width:900px; margin: 0 auto; }
+      .controls { display:flex; gap:8px; margin-bottom:12px; align-items:center }
+      input[type="text"] { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e6e9ef }
+      button { padding:8px 12px; border-radius:8px; border:0; background:#0ea5e9; color:white; cursor:pointer }
+      button.secondary { background:#94a3b8 }
+      .examples { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px }
+      .examples button { background:#eef2ff; color:#3730a3; border-radius:6px; padding:6px 8px; border:0 }
+      iframe { width:100%; height:720px; border:1px solid rgba(15,23,42,0.06); border-radius:8px; background:white }
+      label { font-size:12px; color:#475569; margin-right:8px }
+      .meta { font-size:13px; color:#475569; margin-bottom:10px }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Embed tester — json-render</h1>
+      <p class="meta">Type a prompt, set the app URL (defaults to <code>http://localhost:3000/</code>), then click <strong>Load iframe</strong>. The iframe will get <code>?prompt=...</code> and your app should auto-type and submit.</p>
+
+      <div class="controls">
+        <label for="appUrl">App URL</label>
+        <input id="appUrl" type="text" value="http://localhost:3000/" />
+        <label for="prompt" style="margin-left:8px">Prompt</label>
+        <input id="prompt" type="text" placeholder="Create a login form" />
+        <button id="loadBtn">Load iframe</button>
+        <button id="openBtn" class="secondary">Open new tab</button>
+        <button id="injectGenBtn" class="secondary" title="Type into iframe and trigger Generate">Inject → Generate</button>
+        <button id="injectEditBtn" class="secondary" title="Type into iframe and trigger Edit">Inject → Edit</button>
+        <label style="margin-left:8px; font-size:12px; color:#475569">
+          <input id="autoInjectOnLoad" type="checkbox" /> auto-inject on load
+        </label>
+        <label style="margin-left:8px; font-size:12px; color:#475569">
+          <select id="autoAction" title="Action to perform after auto-inject" style="padding:6px; border-radius:6px; border:1px solid #e6e9ef; background:white; margin-left:6px">
+            <option value="generate">Generate</option>
+            <option value="edit">Edit</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="examples">
+        <button data-prompt="Create a login form with email and password">Login form</button>
+        <button data-prompt="Build a contact form with name, email, and message">Contact form</button>
+        <button data-prompt="Create a pricing table with 3 plans">Pricing table</button>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label for="iframeWidth">Iframe width</label>
+        <input id="iframeWidth" type="text" value="100%" style="width:90px; margin-right:8px;" />
+        <label for="iframeHeight">height</label>
+        <input id="iframeHeight" type="text" value="720px" style="width:90px;" />
+        <button id="applySize" class="secondary">Apply</button>
+      </div>
+
+      <iframe id="targetIframe" src="about:blank" title="json-render embed"></iframe>
+    </div>
+
+    <script>
+      const appUrlInput = document.getElementById('appUrl');
+      const promptInput = document.getElementById('prompt');
+      const loadBtn = document.getElementById('loadBtn');
+      const openBtn = document.getElementById('openBtn');
+      const iframe = document.getElementById('targetIframe');
+      const examples = document.querySelectorAll('.examples button');
+      const iframeWidth = document.getElementById('iframeWidth');
+      const iframeHeight = document.getElementById('iframeHeight');
+      const applySize = document.getElementById('applySize');
+
+      function buildUrl() {
+        let base = appUrlInput.value.trim();
+        if (!base) base = 'http://localhost:3000/';
+        // ensure trailing slash
+        if (!base.endsWith('/')) base += '/';
+        const p = encodeURIComponent(promptInput.value || '');
+        return base + '?prompt=' + p;
+      }
+
+      loadBtn.addEventListener('click', () => {
+        const url = buildUrl();
+        iframe.src = url;
+      });
+
+      openBtn.addEventListener('click', () => {
+        const url = buildUrl();
+        window.open(url, '_blank');
+      });
+
+      examples.forEach(b => b.addEventListener('click', (e) => {
+        promptInput.value = e.currentTarget.getAttribute('data-prompt');
+      }));
+
+      applySize.addEventListener('click', () => {
+        iframe.style.width = iframeWidth.value;
+        iframe.style.height = iframeHeight.value;
+      });
+
+      // support pressing Enter in the prompt field
+      promptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          loadBtn.click();
+        }
+      });
+
+      // Inject helpers - send TYPE_INPUT messages to the iframe
+      const injectGenBtn = document.getElementById('injectGenBtn');
+      const injectEditBtn = document.getElementById('injectEditBtn');
+      const autoInjectOnLoad = document.getElementById('autoInjectOnLoad');
+      const autoActionSelect = document.getElementById('autoAction');
+
+      function sendToIframe(action) {
+        const text = promptInput.value || '';
+        if (!text.trim()) {
+          alert('Please enter a prompt to inject');
+          return;
+        }
+        if (!iframe.src || iframe.src === 'about:blank') {
+          alert('Load the iframe first (click "Load iframe")');
+          return;
+        }
+
+        // Post message to iframe to trigger typing + action
+        iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text, action }, '*');
+      }
+
+      injectGenBtn.addEventListener('click', () => sendToIframe('generate'));
+      injectEditBtn.addEventListener('click', () => sendToIframe('edit'));
+
+      // If auto-inject is enabled, send message to iframe after it loads
+      loadBtn.addEventListener('click', () => {
+        const url = buildUrl();
+        iframe.src = url;
+        history.replaceState(null, '', '#last=' + encodeURIComponent(url));
+
+        if (autoInjectOnLoad.checked) {
+          // Wait for iframe to load then postMessage
+          const action = (autoActionSelect && autoActionSelect.value) || 'generate';
+          const onLoad = () => {
+            // Small delay to allow app scripts to initialize
+            setTimeout(() => {
+              iframe.contentWindow.postMessage({ type: 'TYPE_INPUT', text: promptInput.value || '', action }, '*');
+            }, 350);
+            iframe.removeEventListener('load', onLoad);
+          };
+          iframe.addEventListener('load', onLoad);
+        }
+      });
+
+      // Optional: show current URL in hash for bookmarking
+      // (kept for backward-compatibility)
+      // loadBtn.addEventListener('click', () => {
+      //   history.replaceState(null, '', '#last=' + encodeURIComponent(buildUrl()));
+      // });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,213 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.5rem;
+  /* Monochrome light theme */
+  --background: oklch(1.0 0 0);
+  --foreground: oklch(0.1 0 0);
+  --card: oklch(0.98 0 0);
+  --card-foreground: oklch(0.1 0 0);
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: oklch(0.1 0 0);
+  --primary: oklch(0.1 0 0);
+  --primary-foreground: oklch(1.0 0 0);
+  --secondary: oklch(0.92 0 0);
+  --secondary-foreground: oklch(0.1 0 0);
+  --muted: oklch(0.92 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.92 0 0);
+  --accent-foreground: oklch(0.1 0 0);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(1.0 0 0);
+  --border: oklch(0.85 0 0);
+  --input: oklch(0.85 0 0);
+  --ring: oklch(0.6 0 0);
+}
+
+.dark {
+  /* Monochrome dark theme */
+  --background: oklch(0.0 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.08 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.98 0 0);
+  --primary-foreground: oklch(0.0 0 0);
+  --secondary: oklch(0.15 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: oklch(0.15 0 0);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.25 0 0);
+  --ring: oklch(0.4 0 0);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+  }
+
+  ::selection {
+    @apply bg-foreground text-background;
+  }
+
+  code {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    @apply bg-secondary px-1.5 py-0.5 rounded text-sm;
+  }
+
+  pre {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    @apply overflow-x-auto text-sm leading-relaxed;
+  }
+
+  pre code {
+    @apply bg-transparent p-0;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Shiki dual theme support */
+.shiki,
+.shiki span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* 
+ * Ensure Tailwind color classes work in dynamically rendered HTML.
+ * The body applies text-foreground which can override Tailwind color classes.
+ * This container isolates styles so Tailwind classes apply correctly.
+ */
+.html-render-container {
+  /* Reset to browser defaults, then Tailwind classes apply cleanly */
+  color: initial;
+}
+
+/* Force Tailwind text colors to take precedence with !important */
+.html-render-container .text-pink-500 { color: rgb(236 72 153) !important; }
+.html-render-container .text-pink-600 { color: rgb(219 39 119) !important; }
+.html-render-container .text-red-500 { color: rgb(239 68 68) !important; }
+.html-render-container .text-red-600 { color: rgb(220 38 38) !important; }
+.html-render-container .text-blue-500 { color: rgb(59 130 246) !important; }
+.html-render-container .text-blue-600 { color: rgb(37 99 235) !important; }
+.html-render-container .text-green-500 { color: rgb(34 197 94) !important; }
+.html-render-container .text-green-600 { color: rgb(22 163 74) !important; }
+.html-render-container .text-yellow-500 { color: rgb(234 179 8) !important; }
+.html-render-container .text-yellow-400 { color: rgb(250 204 21) !important; }
+.html-render-container .text-purple-500 { color: rgb(168 85 247) !important; }
+.html-render-container .text-purple-600 { color: rgb(147 51 234) !important; }
+.html-render-container .text-orange-500 { color: rgb(249 115 22) !important; }
+.html-render-container .text-white { color: rgb(255 255 255) !important; }
+.html-render-container .text-black { color: rgb(0 0 0) !important; }
+.html-render-container .text-gray-500 { color: rgb(107 114 128) !important; }
+.html-render-container .text-gray-600 { color: rgb(75 85 99) !important; }
+.html-render-container .text-gray-700 { color: rgb(55 65 81) !important; }
+.html-render-container .text-gray-800 { color: rgb(31 41 55) !important; }
+.html-render-container .text-gray-900 { color: rgb(17 24 39) !important; }
+.html-render-container .text-indigo-600 { color: rgb(79 70 229) !important; }
+
+/* Force Tailwind background colors to take precedence with !important */
+.html-render-container .bg-yellow-100 { background-color: rgb(254 249 195) !important; }
+.html-render-container .bg-yellow-200 { background-color: rgb(254 240 138) !important; }
+.html-render-container .bg-yellow-300 { background-color: rgb(253 224 71) !important; }
+.html-render-container .bg-yellow-400 { background-color: rgb(250 204 21) !important; }
+.html-render-container .bg-yellow-500 { background-color: rgb(234 179 8) !important; }
+.html-render-container .bg-pink-100 { background-color: rgb(252 231 243) !important; }
+.html-render-container .bg-pink-200 { background-color: rgb(251 207 232) !important; }
+.html-render-container .bg-pink-500 { background-color: rgb(236 72 153) !important; }
+.html-render-container .bg-red-100 { background-color: rgb(254 226 226) !important; }
+.html-render-container .bg-red-200 { background-color: rgb(254 202 202) !important; }
+.html-render-container .bg-red-500 { background-color: rgb(239 68 68) !important; }
+.html-render-container .bg-blue-100 { background-color: rgb(219 234 254) !important; }
+.html-render-container .bg-blue-200 { background-color: rgb(191 219 254) !important; }
+.html-render-container .bg-blue-500 { background-color: rgb(59 130 246) !important; }
+.html-render-container .bg-green-100 { background-color: rgb(220 252 231) !important; }
+.html-render-container .bg-green-200 { background-color: rgb(187 247 208) !important; }
+.html-render-container .bg-green-500 { background-color: rgb(34 197 94) !important; }
+.html-render-container .bg-purple-100 { background-color: rgb(243 232 255) !important; }
+.html-render-container .bg-purple-200 { background-color: rgb(233 213 255) !important; }
+.html-render-container .bg-purple-500 { background-color: rgb(168 85 247) !important; }
+.html-render-container .bg-orange-100 { background-color: rgb(255 237 213) !important; }
+.html-render-container .bg-orange-200 { background-color: rgb(254 215 170) !important; }
+.html-render-container .bg-orange-500 { background-color: rgb(249 115 22) !important; }
+.html-render-container .bg-gray-100 { background-color: rgb(243 244 246) !important; }
+.html-render-container .bg-gray-200 { background-color: rgb(229 231 235) !important; }
+.html-render-container .bg-gray-500 { background-color: rgb(107 114 128) !important; }
+.html-render-container .bg-gray-800 { background-color: rgb(31 41 55) !important; }
+.html-render-container .bg-gray-900 { background-color: rgb(17 24 39) !important; }
+.html-render-container .bg-white { background-color: rgb(255 255 255) !important; }
+.html-render-container .bg-black { background-color: rgb(0 0 0) !important; }
+.html-render-container .bg-indigo-500 { background-color: rgb(99 102 241) !important; }
+.html-render-container .bg-indigo-600 { background-color: rgb(79 70 229) !important; }
+.html-render-container .bg-slate-100 { background-color: rgb(241 245 249) !important; }
+.html-render-container .bg-slate-200 { background-color: rgb(226 232 240) !important; }
+.html-render-container .bg-slate-800 { background-color: rgb(30 41 59) !important; }
+.html-render-container .bg-slate-900 { background-color: rgb(15 23 42) !important; }
