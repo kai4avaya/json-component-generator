@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type IncognitoContextValue = {
@@ -16,7 +16,8 @@ function parseIncognito(value: string | null): boolean {
   return value === "1" || value.toLowerCase() === "true";
 }
 
-export function IncognitoProvider({ children }: { children: React.ReactNode }) {
+// Inner component that uses useSearchParams (must be wrapped in Suspense)
+function IncognitoProviderInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -67,6 +68,15 @@ export function IncognitoProvider({ children }: { children: React.ReactNode }) {
     <IncognitoContext.Provider value={value}>
       {children}
     </IncognitoContext.Provider>
+  );
+}
+
+// Wrapper with Suspense boundary (required for useSearchParams in Next.js 14+)
+export function IncognitoProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <IncognitoProviderInner>{children}</IncognitoProviderInner>
+    </Suspense>
   );
 }
 
