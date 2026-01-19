@@ -54,10 +54,10 @@ RULES:
 4. Parent first, then children
 5. Each element needs: key, type, props
 6. Use className for custom Tailwind styling when needed
+7. USe background colors for the component container
 
 FORBIDDEN CLASSES (NEVER USE):
 - min-h-screen, h-screen, min-h-full, h-full, min-h-dvh, h-dvh - viewport heights break the small render container
-- bg-gray-50, bg-slate-50 or any page background colors - container already has background
 
 MOBILE-FIRST RESPONSIVE:
 - ALWAYS design mobile-first. Single column on mobile, expand on larger screens.

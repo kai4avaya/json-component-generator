@@ -1251,7 +1251,7 @@ Open [http://localhost:3000](http://localhost:3000) to view.
   return (
     <div
       className={`w-full text-left incognito-shell ${
-        incognitoActive ? "" : "max-w-4xl mx-auto"
+        incognitoActive ? "min-h-screen flex flex-col" : "max-w-4xl mx-auto"
       }`}
     >
       {/* Prompt input */}
@@ -1394,9 +1394,13 @@ Open [http://localhost:3000](http://localhost:3000) to view.
       </div>
 
       <div
-        className={`grid gap-4 ${
-          effectiveShowCode ? "lg:grid-cols-2" : "lg:grid-cols-1"
-        }`}
+        className={
+          incognitoActive
+            ? "flex flex-col flex-1 min-h-0"
+            : `grid gap-4 ${
+                effectiveShowCode ? "lg:grid-cols-2" : "lg:grid-cols-1"
+              }`
+        }
       >
         {/* Tabbed code/stream/json panel */}
         {effectiveShowCode && (
@@ -1537,7 +1541,13 @@ Open [http://localhost:3000](http://localhost:3000) to view.
               </div>
             </div>
           )}
-          <div className="render-panel rounded h-96 grid relative group bg-background border border-border">
+          <div
+            className={`render-panel relative group bg-background ${
+              incognitoActive
+                ? "flex flex-col flex-1 min-h-0 rounded-none"
+                : "grid h-96 border border-border rounded"
+            }`}
+          >
             {renderView === "static" && (
               <div className="absolute top-2 right-2 z-10">
                 <CopyButton
@@ -1557,7 +1567,11 @@ Open [http://localhost:3000](http://localhost:3000) to view.
               </div>
             )}
             {renderView === "dynamic" ? (
-              <div className="overflow-auto">
+              <div
+                className={`overflow-auto ${
+                  incognitoActive ? "flex-1 min-h-0" : ""
+                }`}
+              >
                 {/* Show edited HTML with live streaming via ref - completely outside React's control */}
                 {editedHtml !== null ? (
                   <div className="w-full min-h-full flex items-center justify-center p-3 py-4 relative">
@@ -1611,7 +1625,11 @@ Open [http://localhost:3000](http://localhost:3000) to view.
                 )}
               </div>
             ) : (
-              <div className="overflow-auto h-full font-mono text-xs text-left">
+              <div
+                className={`overflow-auto ${
+                  incognitoActive ? "flex-1 min-h-0" : "h-full"
+                } font-mono text-xs text-left`}
+              >
                 <CodeBlock
                   code={generatedCode}
                   lang="tsx"
